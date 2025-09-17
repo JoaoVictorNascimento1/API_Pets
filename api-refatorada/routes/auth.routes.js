@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 
 // Importar o vetor de usuários para verificação
 // NOTA: Em uma arquitetura maior, a lógica de busca de usuário estaria em um "service"
-const users = require('/home/LAB13DC/Downloads/Praticas_Javascript_BackEnd-main/api-refatorada/routes/users.routes').users; // Gambiarra para pegar o vetor exportado
+const { users } = require('./users.routes'); // Gambiarra para pegar o vetor exportado
 
 // Chave secreta para assinar o JWT. Em um app real, use variáveis de ambiente!
 const JWT_SECRET = 'sua-chave-super-secreta-e-longa-12345';
@@ -26,14 +26,14 @@ router.post('/login', async(req, res) => {
 
     if (!user) {
         return res.status(401).json({ mensagem: "Credenciais inválidas." }); // 401 Unauthorized
-    }
+    };
 
     // 3. COMPARAR A SENHA ENVIADA COM O HASH SALVO
     // bcrypt.compare é assíncrono e retorna true ou false
     const senhaValida = await bcrypt.compare(senha, user.senha);
         if (!senhaValida) {
-        return res.status(401).json({ mensagem: "Credenciais inválidas." });
-    }
+    return res.status(401).json({ mensagem: "Credenciais inválidas." });
+    };
 
     // 4. Se tudo estiver correto, gerar o Token JWT
     const payload = {

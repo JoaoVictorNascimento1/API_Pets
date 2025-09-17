@@ -2,10 +2,10 @@
 const express = require('express');
 
 //Instanciar rotas para os arquivos das  funcoes da api
-const authRouter = require('/home/LAB13DC/Downloads/Praticas_Javascript_BackEnd-main/api-refatorada/routes/auth.routes');
-const petsRouter = require('/home/LAB13DC/Downloads/Praticas_Javascript_BackEnd-main/api-refatorada/routes/pets.routes');
-const usersRouter = require('/home/LAB13DC/Downloads/Praticas_Javascript_BackEnd-main/api-refatorada/routes/users.routes');
-const authMiddleware = require('/home/LAB13DC/Downloads/Praticas_Javascript_BackEnd-main/api-refatorada/middleware/auth.middleware'); // Importa o middleware
+const authRouter = require('./api-refatorada/routes/auth.routes');
+const petsRouter = require('./api-refatorada/routes/pets.routes');
+const usersRouter = require('./api-refatorada/routes/users.routes');
+const authMiddleware = require('./api-refatorada/middleware/auth.middleware');
 
 const app = express();
 
