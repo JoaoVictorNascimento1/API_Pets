@@ -1,9 +1,10 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const router = express.Router();
 
 let users = [
-    { id: 1, email: "tiagolelek@gmail.com", login: "tiagolelek", senha: "123", nome: "Tiago Leko" },
-    { id: 2, email: "lalinda@gmail.com", login: "Laiza_1", senha: "abc", nome: "Laiza Hersfing" }
+    { id: 1, email: "tiagolelek@gmail.com", login: "tiagolelek", senha: "$2b$10$aPvgzL4FmGH/EIe9PriJAekhcj0zTNQMEnxN7DLpO/nZDAgV8n87i", nome: "Tiago Leko" },
+    { id: 2, email: "lalinda@gmail.com", login: "Laiza_1", senha: "$2b$10$SU9SmkzASdhaZDL5QPNro.X46ZKiwpvvFhFqIs9d5D5MFBCi.GOMG", nome: "Laiza Hersfing" }
 ]
 let proximoId = 3;
 
@@ -21,17 +22,25 @@ router.get('/:id',(req,res)=>{
     res.status(200).json(user);
 });
 
-router.post('/',(req,res)=> {
-    const novoUser = {
+router.post('/', async (req, res) => { // <-- 2. TRANSFORMAR a função em async
+    try {
+    const { login, senha, email, nome } = req.body;
+    // 3. GERAR O HASH DA SENHA
+    const saltRounds = 10; // Fator de custo
+    const senhaHash = await bcrypt.hash(senha, saltRounds);
+    const novoUsuario = {
     id: proximoId++,
-    email: req.body.email,
-    login: req.body.login,
-    senha:req.body.senha,
-    nome: req.body.nome
+    login,
+    senha: senhaHash, // <-- 4. SALVAR O HASH, não a senha original
+    email,
+    nome
     };
-    users.push(novoUser);
-    res.status(201).json(novoUser);
-});
+    users.push(novoUsuario);
+    res.status(201).json({ id: novoUsuario.id, login, email, nome }); // Não retornar a senha/hash
+    } catch (error) {
+    res.status(500).json({ mensagem: "Erro ao criar usuário." });
+    }
+   });
 
 router.put('/:id',(req,res)=>{
     const id = parseInt(req.params.id);
