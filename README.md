@@ -3,4 +3,4 @@ Repositorio criado para armazenar minha primeira api web usando javascript no ba
 - npm install express
 - npm install jsonwebtoken
 - npm install bcrypt
-  
+- npm install express-validator
