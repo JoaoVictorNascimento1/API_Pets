@@ -32,7 +32,7 @@ function authMiddleware(req, res, next) {
 
         // Se o token for válido, 'decoded' contém o payload (userId, login)
         // Adicionamos essa informação na requisição para uso posterior nas rotas
-        req.userId = decoded.userId;
+        req.user = decoded;
         
         // 3. Chamar o próximo middleware ou a rota final
         next();

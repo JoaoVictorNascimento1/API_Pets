@@ -1,10 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
+const {checkRole} = require('../middleware/permition.middleware');
+const authMiddleware = require('../middleware/auth.middleware');
 
 let users = [
-    { id: 1, email: "tiagolelek@gmail.com", login: "t1", senha: "$2b$10$HALUoUWwPUYhiA2vNq.7G.A9f0V4/wfz.grRBPDfRg.fkzBXMqHLu", nome: "Tiago Leko" },
-    { id: 2, email: "lalinda@gmail.com", login: "l1", senha: "$2b$10$FYKiZrwiVtQCZBUSh.wb..j.qVrg3WsUomak2DQA6s9kVxqI2ZELq", nome: "Laiza Hersfing" }
+    { id: 1, email: "tiagolelek@gmail.com", login: "t1", senha: "$2b$10$HALUoUWwPUYhiA2vNq.7G.A9f0V4/wfz.grRBPDfRg.fkzBXMqHLu", nome: "Tiago Leko", role: "admin" },
+    { id: 2, email: "lalinda@gmail.com", login: "l1", senha: "$2b$10$FYKiZrwiVtQCZBUSh.wb..j.qVrg3WsUomak2DQA6s9kVxqI2ZELq", nome: "Laiza Hersfing", role: "common" }
 ]
 let proximoId = 3;
 
@@ -22,7 +24,7 @@ router.get('/:id',(req,res)=>{
     res.status(200).json(user);
 });
 
-router.post('/', async (req, res) => { // <-- 2. TRANSFORMAR a função em async
+router.post('/', authMiddleware, checkRole("admin"), async (req, res) => { // <-- 2. TRANSFORMAR a função em async
     try {
         const { login, senha, email, nome } = req.body;
         // 3. GERAR O HASH DA SENHA
