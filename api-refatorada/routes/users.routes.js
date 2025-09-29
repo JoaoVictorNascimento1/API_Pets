@@ -1,22 +1,20 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const router = express.Router();
-const {checkRole} = require('../middleware/permition.middleware');
-const authMiddleware = require('../middleware/auth.middleware');
+import bcrypt from 'bcrypt';
+import {router} from 'express';
+import {checkRole} from '../middleware/permition.middleware';
+import authMiddleware from '../middleware/auth.middleware';
+import db from '../config/database'
 
-let users = [
-    { id: 1, email: "tiagolelek@gmail.com", login: "t1", senha: "$2b$10$HALUoUWwPUYhiA2vNq.7G.A9f0V4/wfz.grRBPDfRg.fkzBXMqHLu", nome: "Tiago Leko", role: "admin" },
-    { id: 2, email: "lalinda@gmail.com", login: "l1", senha: "$2b$10$FYKiZrwiVtQCZBUSh.wb..j.qVrg3WsUomak2DQA6s9kVxqI2ZELq", nome: "Laiza Hersfing", role: "common" }
-]
-let proximoId = 3;
+const router = Router();
 
-router.get('/', (req,res) => {
-    res.status(200).json(users);
+router.get('/', async(req,res) => {
+    await db.read();
+    res.status(200).json(db.data.users);
 });
 
-router.get('/:id',(req,res)=>{
+router.get('/:id', async(req,res)=>{
+    await db.read();
     const id = parseInt(req.params.id)
-    const user = users.find(u => u.id === id);
+    const user = db.data.users.find(u => u.id === id);
 
     if(!user){
         return res.status(404).json({mensagem: 'Usuario não encontrado!'});
@@ -26,27 +24,38 @@ router.get('/:id',(req,res)=>{
 
 router.post('/', authMiddleware, checkRole("admin"), async (req, res) => { // <-- 2. TRANSFORMAR a função em async
     try {
-        const { login, senha, email, nome } = req.body;
+        const { login, senha, email, nome, role } = req.body;
+        
         // 3. GERAR O HASH DA SENHA
         const saltRounds = 10; // Fator de custo
         const senhaHash = await bcrypt.hash(senha, saltRounds);
+        
+        await db.read();
+        const novoId = db.data.users.length > 0 ? Math.max(...db.data.users.map(u => u.id)) + 1 : 1;
+
         const novoUsuario = {
-            id: proximoId++,
+            id: novoId,
             login,
             senha: senhaHash, // <-- 4. SALVAR O HASH, não a senha original
             email,
-            nome
+            nome,
+            role
         };
-        users.push(novoUsuario);
+        
+        db.data.users.push(novoUsuario);
+        await db.write();
+
         res.status(201).json({ id: novoUsuario.id, login, email, nome }); // Não retornar a senha/hash
         } catch (error) {
             res.status(500).json({ mensagem: "Erro ao criar usuário." });
         }
 });
 
-router.put('/:id',(req,res)=>{
+router.put('/:id', async(req,res)=>{
+    
+    await db.read();
     const id = parseInt(req.params.id);
-    const index = users.findIndex(u => u.id === id);
+    const index = db.data.users.findIndex(u => u.id === id);
 
     if(id === -1){
         return res.status(404).json({mensagem: "Usuario não encontrado"});
@@ -60,11 +69,16 @@ router.put('/:id',(req,res)=>{
     nome: req.body.nome
     };
 
-    users[index] = userAtualizado;
-    res.status(200).json(userAtualizado);
+    db.data.users[index] = userAtualizado;
+    
+    await db.write();
+    res.status(200).json(db.data.users[index]);
 });
 
-router.patch('/:id', (req,res)=>{
+router.patch('/:id', async (req,res)=>{
+    
+    await db.read();
+
     const id = parseInt(req.params.id);
     const index = users.findIndex(u => u.id === id);
 

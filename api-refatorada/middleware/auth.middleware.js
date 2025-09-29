@@ -1,6 +1,6 @@
 // middleware/auth.middleware.js
 
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 const JWT_SECRET = 'sua-chave-super-secreta-e-longa-12345'; // Use a mesma chave!
 
 function authMiddleware(req, res, next) {

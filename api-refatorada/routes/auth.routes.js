@@ -1,13 +1,13 @@
 // routes/auth.routes.js
 
-const express = require('express');
-const bcrypt = require('bcrypt');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import {router} from express.Router();
+import jwt from 'jsonwebtoken';
 
 // Importar o vetor de usuários para verificação
 // NOTA: Em uma arquitetura maior, a lógica de busca de usuário estaria em um "service"
-const { users } = require('./users.routes'); // Gambiarra para pegar o vetor exportado
+import { users } from './users.routes'; // Gambiarra para pegar o vetor exportado
 
 // Chave secreta para assinar o JWT. Em um app real, use variáveis de ambiente!
 const JWT_SECRET = 'sua-chave-super-secreta-e-longa-12345';

@@ -1,11 +1,11 @@
 //IMPORTAR O EXPRESS E INSTANCIAR
-const express = require('express');
+import express from 'express';
 
 //Instanciar rotas para os arquivos das  funcoes da api
-const authRouter = require('./api-refatorada/routes/auth.routes');
-const petsRouter = require('./api-refatorada/routes/pets.routes');
-const usersRouter = require('./api-refatorada/routes/users.routes');
-const authMiddleware = require('./api-refatorada/middleware/auth.middleware');
+import {authRouter} from './api-refatorada/routes/auth.routes';
+import {petsRouter} from './api-refatorada/routes/pets.routes';
+import {usersRouter} from './api-refatorada/routes/users.routes';
+import authMiddleware from './api-refatorada/middleware/auth.middleware';
 
 const app = express();
 
