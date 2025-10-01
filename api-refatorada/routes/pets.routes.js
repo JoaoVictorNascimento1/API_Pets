@@ -158,4 +158,4 @@ petsRouter.delete('/:id', petIdRules(), validateRequest, (req, res) => {
 });
 
 
-module.exports = petsRouter;
+export {petsRouter};

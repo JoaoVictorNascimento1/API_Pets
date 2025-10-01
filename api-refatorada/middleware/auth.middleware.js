@@ -1,7 +1,11 @@
 // middleware/auth.middleware.js
 
 import jwt from 'jsonwebtoken';
-const JWT_SECRET = 'sua-chave-super-secreta-e-longa-12345'; // Use a mesma chave!
+
+// BOA PRÁTICA: Idealmente, importe a chave de um arquivo de configuração ou variável de ambiente
+// para garantir que seja a mesma usada na criação do token.
+// Ex: import { JWT_SECRET } from '../config/auth.config.js';
+const JWT_SECRET = process.env.JWT_SECRET || 'sua-chave-super-secreta-e-longa-12345';
 
 function authMiddleware(req, res, next) {
     // 1. Buscar o token no cabeçalho da requisição
@@ -12,7 +16,6 @@ function authMiddleware(req, res, next) {
     }
 
     // O formato do header é "Bearer TOKEN_LONGO"
-    // Usamos split para pegar apenas a parte do token
     const parts = authHeader.split(' ');
     if (parts.length !== 2) {
         return res.status(401).json({ mensagem: "Erro no formato do token." });
@@ -26,17 +29,16 @@ function authMiddleware(req, res, next) {
     // 2. Validar o token
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            // Se o token for inválido (expirado, assinatura errada, etc.)
             return res.status(401).json({ mensagem: "Token inválido ou expirado." });
         }
 
-        // Se o token for válido, 'decoded' contém o payload (userId, login)
-        // Adicionamos essa informação na requisição para uso posterior nas rotas
+        // Adiciona o payload decodificado na requisição para uso posterior
         req.user = decoded;
         
         // 3. Chamar o próximo middleware ou a rota final
-        next();
+        return next(); // Adicionar 'return' é uma boa prática para garantir que a função pare aqui.
     });
 }
 
-module.exports = authMiddleware;
+// CORREÇÃO: Usando 'export default' para ser consistente com 'import'
+export default authMiddleware;

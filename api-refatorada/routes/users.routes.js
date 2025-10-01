@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
-import {router} from 'express';
-import {checkRole} from '../middleware/permition.middleware';
-import authMiddleware from '../middleware/auth.middleware';
-import db from '../config/database'
+// A importação original 'router' foi corrigida para 'Router', que é o nome correto do export do express.
+import { Router } from 'express';
+import {checkRole} from '../middleware/permition.middleware.js';
+import authMiddleware from '../middleware/auth.middleware.js';
+import db from '../config/database.js'
 
 const router = Router();
 
@@ -22,12 +23,11 @@ router.get('/:id', async(req,res)=>{
     res.status(200).json(user);
 });
 
-router.post('/', authMiddleware, checkRole("admin"), async (req, res) => { // <-- 2. TRANSFORMAR a função em async
+router.post('/', authMiddleware, checkRole("admin"), async (req, res) => {
     try {
         const { login, senha, email, nome, role } = req.body;
         
-        // 3. GERAR O HASH DA SENHA
-        const saltRounds = 10; // Fator de custo
+        const saltRounds = 10;
         const senhaHash = await bcrypt.hash(senha, saltRounds);
         
         await db.read();
@@ -36,7 +36,7 @@ router.post('/', authMiddleware, checkRole("admin"), async (req, res) => { // <-
         const novoUsuario = {
             id: novoId,
             login,
-            senha: senhaHash, // <-- 4. SALVAR O HASH, não a senha original
+            senha: senhaHash,
             email,
             nome,
             role
@@ -45,7 +45,7 @@ router.post('/', authMiddleware, checkRole("admin"), async (req, res) => { // <-
         db.data.users.push(novoUsuario);
         await db.write();
 
-        res.status(201).json({ id: novoUsuario.id, login, email, nome }); // Não retornar a senha/hash
+        res.status(201).json({ id: novoUsuario.id, login, email, nome });
         } catch (error) {
             res.status(500).json({ mensagem: "Erro ao criar usuário." });
         }
@@ -57,16 +57,18 @@ router.put('/:id', async(req,res)=>{
     const id = parseInt(req.params.id);
     const index = db.data.users.findIndex(u => u.id === id);
 
-    if(id === -1){
+    if(index === -1){ 
         return res.status(404).json({mensagem: "Usuario não encontrado"});
     };
 
+    const senhaHash = await bcrypt.hash(req.body.senha, 10);
+
     const userAtualizado = {
-    id: id,
-    email: req.body.email,
-    login: req.body.login,
-    senha:req.body.senha,
-    nome: req.body.nome
+        id: id,
+        email: req.body.email,
+        login: req.body.login,
+        senha: senhaHash,
+        nome: req.body.nome
     };
 
     db.data.users[index] = userAtualizado;
@@ -80,31 +82,41 @@ router.patch('/:id', async (req,res)=>{
     await db.read();
 
     const id = parseInt(req.params.id);
-    const index = users.findIndex(u => u.id === id);
+    const index = db.data.users.findIndex(u => u.id === id);
 
-    if(id === -1){
+    if(index === -1){
         return res.status(404).json({mensagem: "Usuario não encontrado"});
     };
 
-    const userOriginal = users[index];
+    const userOriginal = db.data.users[index];
     const userAtualizado = {
         id: userOriginal.id,
         email: req.body.email || userOriginal.email,
         login: req.body.login || userOriginal.login,
-        senha: req.body.senha || userOriginal.senha,
+        senha: userOriginal.senha,
         nome: req.body.nome || userOriginal.nome
     };
-    users[index] = userAtualizado;
+    
+    if (req.body.senha) {
+        userAtualizado.senha = await bcrypt.hash(req.body.senha, 10);
+    }
+    
+    db.data.users[index] = userAtualizado;
+    await db.write();
     res.status(200).json(userAtualizado);
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
+    await db.read();
     const id = parseInt(req.params.id);
-    const index = users.findIndex(u => u.id === id);
+    
+    const index = db.data.users.findIndex(u => u.id === id);
     if (index === -1) {
         return res.status(404).json({ mensagem: "Usuario não encontrado!" });
     }
-    users.splice(index, 1);
+    
+    db.data.users.splice(index, 1);
+    await db.write(); 
     res.status(204).send();
 });
 
@@ -114,5 +126,4 @@ router.use((req, res, next) => {
 });
 
 
-module.exports = router;
-module.exports.users = users;
+export {router as usersRouter};

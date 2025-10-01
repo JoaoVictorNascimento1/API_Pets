@@ -1,28 +1,34 @@
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 
-// Caminho para o arquivo JSON do banco
-const adapter = new JSONFile('db.json');
-const db = new Low(adapter);
-
-// Lê os dados existentes do arquivo
-await db.read();
-
-// Inicializa a estrutura padrão caso o arquivo esteja vazio
-db.data ||= {
+// 1. Defina a estrutura de dados padrão PRIMEIRO
+const defaultData = {
   users: [
     {
       id: 1,
       nome: "Admin User",
       email: "admin@example.com",
-      password: "$2a$10$...", // Coloque um hash real aqui
+      login: "admin", // Adicionei um login para o admin
+      senha: "$2b$10$X5W0ApQeirQ9Zh7aJ3cfP.9C/vt34f4KL4Nl97Lim5huAhKbU8Va6", // Coloque um hash real aqui
       role: "admin"
     }
   ],
   pets: []
 };
 
-// Grava os dados se foi necessário inicializar
+// 2. Crie o adapter
+const adapter = new JSONFile('db.json');
+
+// 3. Passe o adapter E os dados padrão para o construtor
+const db = new Low(adapter, defaultData);
+
+// 4. Leia os dados do arquivo. Se o arquivo não existir ou estiver vazio,
+// o lowdb usará automaticamente os 'defaultData' que você forneceu.
+await db.read();
+
+// 5. Escreva no disco. Isso é importante para criar o arquivo db.json
+// com os dados padrão na primeira vez que o servidor rodar.
 await db.write();
 
+// 6. Exporte o banco de dados pronto para uso.
 export default db;
