@@ -1,9 +1,9 @@
-const { Router } = require('express');
+import { Router } from 'express';
 // 1. Importa as funções necessárias do express-validator.
 // - `body`: Para validar campos no corpo (body) da requisição (usado em POST, PUT, PATCH).
 // - `param`: Para validar parâmetros na URL (como o :id).
 // - `validationResult`: Uma função para coletar todos os erros de validação encontrados.
-const { body, param, validationResult } = require('express-validator');
+import { body, param, validationResult } from 'express-validator';
 
 const petsRouter = Router();
 
@@ -158,4 +158,4 @@ petsRouter.delete('/:id', petIdRules(), validateRequest, (req, res) => {
 });
 
 
-module.exports = petsRouter;
+export {petsRouter};
