@@ -6,6 +6,7 @@ import {authRouter} from './api-refatorada/routes/auth.routes.js';
 import {petsRouter} from './api-refatorada/routes/pets.routes.js';
 import {usersRouter} from './api-refatorada/routes/users.routes.js';
 import authMiddleware from './api-refatorada/middleware/auth.middleware.js';
+import { globalErrorHandler } from './api-refatorada/middleware/error.middleware.js';
 
 const app = express();
 
@@ -29,6 +30,9 @@ app.use('/api/users', usersRouter);
 // Todas as rotas de pets agora exigirão um token válido.
 // O middleware 'authMiddleware' será executado ANTES de qualquer rota em 'petsRouter'.
 app.use('/api/pets', authMiddleware, petsRouter);
+
+// Error Handler
+app.use(globalErrorHandler);
 
 //INICIALIZAÇÃO DO SERVIDOR
 const PORTA = 3000;

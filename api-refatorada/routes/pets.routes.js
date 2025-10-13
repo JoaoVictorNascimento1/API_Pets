@@ -97,64 +97,90 @@ petsRouter.get('/', (req, res) => {
 
 // GET: Buscar um pet pelo ID
 // 15. Aqui usamos as regras de validação para o parâmetro 'id'.
-petsRouter.get('/:id', petIdRules(), validateRequest, (req, res) => {
-    const id = parseInt(req.params.id);
-    const pet = pets.find(p => p.id === id);
+petsRouter.get('/:id', petIdRules(), validateRequest, (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        const pet = pets.find(p => p.id === id);
 
-    if (!pet) {
-        return res.status(404).json({ message: 'Pet não encontrado.' });
+        if (!pet) {
+            const error = new Error('Pet não encontrado.');
+            error.statusCode = 404;
+            return next(error); // ou throw error
+        }
+
+        res.status(200).json(pet);
+    } catch (error) {
+        next(error); // envia o erro para o middleware global
     }
-    res.status(200).json(pet);
 });
 
 // PUT: Atualizar um pet por completo
 // 16. O PUT exige todos os campos, então reutilizamos as regras de criação. Também validamos o ID.
 petsRouter.put('/:id', petIdRules(), petCreationRules(), validateRequest, (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = pets.findIndex(p => p.id === id);
+    try{
+        const id = parseInt(req.params.id);
+        const index = pets.findIndex(p => p.id === id);
 
-    if (index === -1) {
-        return res.status(404).json({ message: 'Pet não encontrado.' });
-    }
-    
-    const { especie, raca, nome } = req.body;
-    const petAtualizado = { id, especie, raca, nome };
-    pets[index] = petAtualizado;
-    res.status(200).json(petAtualizado);
+        if (index === -1) {
+            const error = new Error('Pet não encontrado.');
+            error.statusCode = 404;
+            return next(error);
+        }
+        
+        const { especie, raca, nome } = req.body;
+        const petAtualizado = { id, especie, raca, nome };
+        pets[index] = petAtualizado;
+
+        res.status(200).json(petAtualizado);
+    }catch(error){
+        next(error)
+}
 });
 
 // PATCH: Atualizar um pet parcialmente
 // 17. Para o PATCH, usamos as regras de atualização parcial e as de ID.
 petsRouter.patch('/:id', petIdRules(), petUpdateRules(), validateRequest, (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = pets.findIndex(p => p.id === id);
+    try{
+        const id = parseInt(req.params.id);
+        const index = pets.findIndex(p => p.id === id);
 
-    if (index === -1) {
-        return res.status(404).json({ message: 'Pet não encontrado.' });
+        if (index === -1) {
+            const error = new Error('Pet não encontrado.');
+            error.statusCode = 404;
+            return next(error);
+        }
+
+        const pet = pets[index];
+        const { especie, raca, nome } = req.body;
+
+        if (especie) pet.especie = especie;
+        if (raca) pet.raca = raca;
+        if (nome) pet.nome = nome;
+
+        res.status(200).json(pet);
+    }catch(error){
+        next(error);
     }
-
-    const pet = pets[index];
-    const { especie, raca, nome } = req.body;
-
-    if (especie) pet.especie = especie;
-    if (raca) pet.raca = raca;
-    if (nome) pet.nome = nome;
-
-    res.status(200).json(pet);
 });
 
 // DELETE: Deletar um pet
 // 18. O DELETE também precisa validar se o ID fornecido é válido.
 petsRouter.delete('/:id', petIdRules(), validateRequest, (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = pets.findIndex(p => p.id === id);
+    try{
+        const id = parseInt(req.params.id);
+        const index = pets.findIndex(p => p.id === id);
 
-    if (index === -1) {
-        return res.status(404).json({ message: 'Pet não encontrado.' });
+        if (index === -1) {
+            const error = new Error('Pet não encontrado.' );
+            error.statusCode = 404;
+            return next(error);
+        }
+
+        pets.splice(index, 1);
+        res.status(204).send();
+    }catch(error){
+        next(error);
     }
-
-    pets.splice(index, 1);
-    res.status(204).send();
 });
 
 

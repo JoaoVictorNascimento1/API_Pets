@@ -17,19 +17,25 @@ router.post('/login', async(req, res) => {
         const { login, senha } = req.body;
 
         if (!login || !senha) {
-            return res.status(400).json({ mensagem: "Login e senha são obrigatórios." });
+            const error = new Error("Login e senha são obrigatórios.");
+            error.statusCode = 400
+            return next(error);
         }
 
         const user = db.data.users.find(u => u.login === login);
 
         if (!user) {
-            return res.status(401).json({ mensagem: "Credenciais inválidas." });
+            const error = new Error("Credenciais inválidas.");
+            error.statusCode = 401
+            return next(error);
         }
 
         const senhaValida = await bcrypt.compare(senha, user.senha);
         if (!senhaValida) {
-            return res.status(401).json({ mensagem: "Credenciais inválidas." });
-        }
+            const error = new Error("Credenciais inválidas.");
+            error.statusCode = 401;
+            return next(error);
+            }
 
         const payload = {
             userId: user.id,
@@ -46,8 +52,7 @@ router.post('/login', async(req, res) => {
         res.status(200).json({ token }); // Forma mais curta de escrever { token: token }
 
     } catch (error) {
-        console.error("Erro no login:", error);
-        res.status(500).json({ mensagem: "Ocorreu um erro interno no servidor." });
+        next(error)
     }
 });
 
